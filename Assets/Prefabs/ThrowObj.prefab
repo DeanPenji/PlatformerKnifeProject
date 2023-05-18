@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 1485668195030372630}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.47851, y: 0.47851, z: 0.47851}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: e6f843c8f23c1fd4395f04f8f2a35b5c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -111,10 +111,10 @@ Rigidbody:
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &3025373991546719433
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,6 +127,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 955f7b0bb17a4544d86dc88d56f7d122, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  knifeCollider: {fileID: 0}
+  knifeParent: {fileID: 0}
+  knifeRb: {fileID: 0}
+  knifeMat: {fileID: 2100000, guid: e6f843c8f23c1fd4395f04f8f2a35b5c, type: 2}
+  knifeColor: {r: 0, g: 1, b: 0.99020815, a: 1}
+  attackPoint: {fileID: 0}
+  OKScript: {fileID: 0}
+  knifeStateToggle: 0
+  throwKey: 324
   lifeTimer: 100
-  damage: 50
+  damage: 0
+  isTimed: 0
+  isSwappable: 0
+  rotationSpeed: 30
   type: 0

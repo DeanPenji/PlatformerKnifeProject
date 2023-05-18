@@ -7,46 +7,39 @@ public class OneKnifeScript : MonoBehaviour
 
     [Header("References")]
     public Transform cam;
-    public Transform attackPoint;
-    public GameObject knifeObj;
-
-    [Header("Settings")]
-    public int TotalThrows;
-    public float throwCooldown;
+    public ProjectileAddon knife1Script;
+    public ProjectileAddon knife2Script;
 
     [Header("Throwing")]
-    public KeyCode throwKey = KeyCode.Mouse0;
     public KeyCode recallKey = KeyCode.R;
     public KeyCode swapKey = KeyCode.X;
     public float throwForce;
     public float throwUpwardForce;
 
-    bool readyToThrow;
-    public bool isEquipped = true;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-
+        Physics.IgnoreCollision(knife1Script.knifeCollider, knife2Script.knifeCollider, true);
     }
     // Update is called once per frame
     void Update()
     {
-        //New Lines include throwKeyAlt, knifeToBeThrown
-        if (Input.GetKeyDown(throwKey) && isEquipped)
-            ThrowKnife();
-        if (Input.GetKeyDown(recallKey))
-            ResetThrow();
-        if (Input.GetKeyDown(swapKey) && knifeObj.transform.parent.CompareTag("IsSwappable"))
-            SwapPosMechanic(knifeObj.transform.parent.gameObject);
-    }
-    private void ThrowKnife()
-    {
-        knifeObj.transform.position = attackPoint.position;
-        //get rigidbody of object
-        Rigidbody knifeRb = knifeObj.GetComponent<Rigidbody>();
+        if (Input.GetKeyDown(knife1Script.throwKey) && knife1Script.knifeStateToggle == ProjectileAddon.KnifeState.Equipped)
+            ThrowKnife(knife1Script);
 
-        knifeRb.isKinematic = false;
+        if (Input.GetKeyDown(knife2Script.throwKey) && knife2Script.knifeStateToggle == ProjectileAddon.KnifeState.Equipped)
+            ThrowKnife(knife2Script);
+
+        if (Input.GetKeyDown(recallKey))
+            RecallKnives();
+
+        if (Input.GetKeyDown(swapKey))
+            SwapMechanicCheck();
+    }
+    private void ThrowKnife(ProjectileAddon knifeToBeThrown)
+    {
+        knifeToBeThrown.gameObject.transform.position = knifeToBeThrown.attackPoint.position;
+
+        knifeToBeThrown.knifeRb.isKinematic = false;
 
 
         Vector3 forceDirection = cam.transform.forward;
@@ -55,34 +48,66 @@ public class OneKnifeScript : MonoBehaviour
 
         if (Physics.Raycast(cam.position, cam.forward, out hit, 500f))
         {
-            forceDirection = (hit.point - attackPoint.position).normalized;
+            forceDirection = (hit.point - knifeToBeThrown.attackPoint.position).normalized;
         }
 
         // add force
         Vector3 forcetoAdd = forceDirection * throwForce + transform.up * throwUpwardForce;
 
-        knifeRb.AddForce(forcetoAdd, ForceMode.Impulse);
+        knifeToBeThrown.knifeRb.AddForce(forcetoAdd, ForceMode.Impulse);
 
-        knifeRb.transform.parent = null;
-        isEquipped = false;
+        knifeToBeThrown.knifeRb.transform.parent = null;
+        knifeToBeThrown.knifeStateToggle = ProjectileAddon.KnifeState.Throwing;
 
     }
-    private void ResetThrow()
+    private void RecallKnives()
     {
-        isEquipped = true;
-        Rigidbody knifeRb = knifeObj.GetComponent<Rigidbody>();
-        knifeRb.isKinematic = true;
-        knifeObj.transform.position = attackPoint.position;
-        knifeObj.transform.parent = attackPoint;
+        if (knife1Script.knifeStateToggle != ProjectileAddon.KnifeState.Equipped)
+        {
+            knife1Script.knifeStateToggle = ProjectileAddon.KnifeState.Recalling;
+
+            knife1Script.RemoveKnifeParent();
+        }
+
+        if (knife2Script.knifeStateToggle != ProjectileAddon.KnifeState.Equipped)
+        {
+            knife2Script.knifeStateToggle = ProjectileAddon.KnifeState.Recalling;
+
+            knife2Script.RemoveKnifeParent();
+        }
+       
     }
 
-    private void SwapPosMechanic(GameObject ObjToSwap)
+    private void SwapMechanicCheck()
     {
-        Vector3 objToSwapPos = new Vector3(ObjToSwap.transform.position.x, ObjToSwap.transform.position.y, ObjToSwap.transform.position.z);
-        Vector3 PlayerPos = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, gameObject.transform.position.z);
+        if (knife1Script.knifeStateToggle == ProjectileAddon.KnifeState.Attached && knife1Script.isSwappable)
+        {
+            if (knife2Script.knifeStateToggle == ProjectileAddon.KnifeState.Attached && knife2Script.isSwappable)
+                SwapPosMechanic(knife1Script.knifeParent.gameObject, knife2Script.knifeParent.gameObject);
 
-        ObjToSwap.transform.position = PlayerPos;
-        gameObject.transform.position = objToSwapPos;
+            else if (knife2Script.knifeStateToggle == ProjectileAddon.KnifeState.Equipped)
+                SwapPosMechanic(knife1Script.knifeParent.gameObject, gameObject);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        else if (knife2Script.knifeStateToggle == ProjectileAddon.KnifeState.Attached && knife2Script.isSwappable)
+        {
+            if (knife1Script.knifeStateToggle == ProjectileAddon.KnifeState.Attached && knife1Script.isSwappable)
+                SwapPosMechanic(knife2Script.knifeParent.gameObject, knife1Script.knifeParent.gameObject);
+
+            else if (knife1Script.knifeStateToggle == ProjectileAddon.KnifeState.Equipped)
+                SwapPosMechanic(knife2Script.knifeParent.gameObject, gameObject);
+        }
+    }
+
+    private void SwapPosMechanic(GameObject objToSwap1, GameObject objToSwap2)
+    {
+        Vector3 objToSwap1Pos = new Vector3(objToSwap1.transform.position.x, objToSwap1.transform.position.y, objToSwap1.transform.position.z);
+        Vector3 objToSwap2Pos = new Vector3(objToSwap2.transform.position.x, objToSwap2.transform.position.y, objToSwap2.transform.position.z);
+
+        objToSwap1.transform.position = objToSwap2Pos;
+        objToSwap2.transform.position = objToSwap1Pos;
 
 
     }
